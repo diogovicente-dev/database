@@ -2,10 +2,14 @@
 
 # Curso Banco de Dados - RocketSeat
 
-_Professor Felipe Nunes_
+**Professor Felipe Nunes**
 
 Do Básico ao Avançado com PostreSQL
 
-<img style="width:32px" src="./assets/images.png">
+<img style="width:48px" src="./assets/images.png">
 
-- Nível: iniciante
+## Módulo 1 - Fundamentos
+
+- Introdução ao Mundo dos Bancos de Dados
+- Manipulação Básica de Dados
+- Modelagem de Dados Essencial
