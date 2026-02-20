@@ -49,21 +49,27 @@ _Banco mal modelado_
 - foco no negócio, sem detalhes técnicos
 - utilização de diagramas ER
 - exemplo:
+  <br>
   <img src="../assets/modelo-conceitual.png">
+  <br>
 
 **Modelo Lógico**
 
 - traduz o modelo conceitual em estruturas compatíveis com SGBDs
 - define os tipos de dados, chaves primárias e estrangeiras (relacionamentos)
 - exemplo:
+  <br>
   <img src="../assets/modelo-logico.png">
+  <br>
 
 **Modelo Físico**
 
 - detalha como os dados serão armazenados no SGBD específico
 - inclui índices, tabelas físicas, partições, etc..
 - exemplo:
+  <br>
   <img src="../assets/modelo-fisico.png">
+  <br>
 
 ### Modelo Entidade-Relacionamento
 
@@ -73,7 +79,9 @@ _Banco mal modelado_
   -- softwares apoiam essa construção
 - ferramenta visual para modelagem conceitual
 - exemplo visual:
+  <br>
   <img src="../assets/exemplo-ER.png">
+  <br>
 
 ## Componentes do modelo Entidade-Relacionamento
 
@@ -381,9 +389,10 @@ _Dependência Funcional Multivalorada_
 
 - todos os atributos de uma tabela devem ser atômicos, ou seja, a tabela não deve conter grupos repetidos e nem atributos com mais de um valor
 - Regra: para deixar neste forma normal, é preciso identificar a chave primária da tabela, identificar a(s) coluna(s) que tem dados repetidos e removê-la(s), criar uma nova tabela com a chave primária para armazenar o dado repetido e, por fim, criar uma relação entre a tabela principal e a tabela secundária.
-  <br>
-  <img src="../assets/normal/1fn.png">
-  <br>
+
+<br>
+<img src="../assets/normal/1fn.png">
+<br>
 
 ### 2FN
 
@@ -403,3 +412,32 @@ _Dependência Funcional Multivalorada_
 - para atingir essa forma, é preciso identificar as colunas que são funcionalmente dependentes das outras colunas não chave e extraí-las para outra tabela
 
 ## Formas Normais Boyce-Codd (BCFN), 4FN e 5FN
+
+Formas Normais bem menos utilizadas (geralmente a Boyce-Codd)
+
+### Boyce-Codd
+
+- um pouco mais 'forte' que a 3FN
+- não é requisito para transformar na 4FN
+- destinada a lidar com situações em que se verifique a existência de mais do que uma chave candidata e que duas chaves candidatas possuam elementos comuns
+- está na BCFN quanto todos os atributos estão dependentes da chave, somente da chave
+
+<br>
+<img src="../assets/normal/bcfn.png">
+<br>
+
+### 4FN
+
+- para uma tabela estar na 4FN precisa estar primeiramente na 3FN
+- concerne em anomalias existentes na relação entre diferentes colunas da chave primária, e só se aplica em tabelas com chaves primárias compostas por três colunas ou mais
+
+<br>
+<img src="../assets/normal/4fn.png">
+<br>
+
+### 5FN
+
+- caso mais raro de acontecer
+- precisamos estar na 4FN
+- regra: garantir que ao unir as tabelas, não possam ser obtidas informações adicionais que ainda não estejam disponíveis nas tabelas separadas.
+- difícil de criar exemplos porque as normas 3fn e 4fn já normalizam tudo.

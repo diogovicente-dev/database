@@ -5,8 +5,9 @@
 **Professor Felipe Nunes**
 
 Do Básico ao Avançado com PostreSQL
-
+<br>
 <img style="width:48px" src="./assets/images.png">
+<br>
 
 ## Módulo 1 - Fundamentos
 
