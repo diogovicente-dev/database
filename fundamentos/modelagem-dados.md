@@ -1,5 +1,11 @@
 # Modelagem de Dados Essencial
 
+_Introdução_
+_Chaves Primárias_
+_Chaves Estrangeiras_
+_Normalização_
+_Formas Normais: 1FN, 2FN, 3FN, BCFN, 4FN e 5FN_
+
 **Conceitos de modelagem entidade-relacionamento**
 
 ## Introdução à Modelagem de Dados
@@ -441,3 +447,299 @@ Formas Normais bem menos utilizadas (geralmente a Boyce-Codd)
 - precisamos estar na 4FN
 - regra: garantir que ao unir as tabelas, não possam ser obtidas informações adicionais que ainda não estejam disponíveis nas tabelas separadas.
 - difícil de criar exemplos porque as normas 3fn e 4fn já normalizam tudo.
+
+## Criações de Diagrama (Convenções de Notação)
+
+- Diagrama ER (Ferramentas)
+  - gratuitos
+    - draw.io
+    - dbdiagram.io
+    - Lucidchart
+  - MySQL Workbench (integra com o BD)
+  - Microsoft Visio
+  - ERDPlus
+
+**Estilo Chen**
+
+- retângulo: entidades
+- retângulo com uma borda de linha dupla: entidade fraca
+- retângulo com um losango dentro: entidade associativa
+- oval: atributo
+- oval com borda de linha dupla: atributo multivalorado
+- oval com borda de linha pontilhada: atributo derivado
+- losango: relacionamento
+- losango com borda de linha dupla: relacionamento fraco
+- linha reta: relacionamento obrigatório
+- linha pontilhada: relacionamento opcional
+- caracteres 1, N, M: cardinalidade de relacionamentos
+
+<br>
+<img src="../assets/notacao-chen.png">
+<br>
+
+**Estilo Pé de Galinha/Martin**
+
+- semelhante ao estilo _chen_, diferenças na representação da cardinalidade
+- usa anel (zero), o traço (um), e pé de galinha para muitos
+
+<br>
+<img src="../assets/notacao-pe-de-galinha.png">
+<br>
+
+**Estilo UML - Simplificada**
+
+- entidades como classes
+- complexidade no domínio
+- necessidade de detalhamento (atributos vs somente tabelas/colunas)
+- integração com outras metodologias (UML, DDD, BPMN)
+
+## Criação de Diagramas (Ferramentas)
+
+- Exemplos Práticos:
+  - Um funcionário é alocado em um departamento e um departamento pode alocar um ou muitos funcionários
+  - Um pedido é composto por itens de pedido e cada item compôe apenas um pedido
+  - Um projeto aloca muitos funcionários e muitos funcionários são alocaos em um projeto em uma data
+
+## Mapeamento ER para Modelo Relacional
+
+- Prática: aplicar a normalização
+- Passos:
+  - toda entidade vira uma tabela
+  - atributos identificadores viram a chave primária
+  - se atributos multivalorados, aplicar uma nova entidade ou todos os atributos na tabela
+
+## Conceitos de Tabelas, Constraints e Integridade
+
+**Constraint**
+
+- são as regras aplicadas a uma coluna ou tabela para armazenamento das informações no banco de dados
+- tipos de dados padrões
+
+```sql
+CREATE TABLE nome_tabela (
+ coluna1 TIPO [CONSTRAINT ... ]
+ coluna2 TIPO [CONSTRAINT ... ]
+ ...
+
+ [CONSTRAINT nome_constraint] PRIMARY KEY (coluna1, coluna2)
+ [CONSTRAINT nome_constraint] FOREIGN KEY (coluna3) REFERENCES outra_tabela(coluna1)
+
+)
+```
+
+**Constraints de Coluna**
+
+- `NOT NULL` => valor obrigatório
+- `UNIQUE` => valor 'único' para a coluna
+- `CHECK` => condições customizadas (não tão usado)
+- `DEFAULT` => valor padrão (usado em booleanos, por exemplo)
+- `COMMENT ON COLUMN` => documentação inline
+
+- Chave Primária
+  - define unicidade e não nulidade
+    - `CONSTRAINT pk_tabela PRIMARY KEY(coluna1, coluna2)`
+
+- Chave Estrangeira
+  - integridade referencial
+  - ações ON DELETE / ON UPDATE: CASCADE, SET NULL, RESTRICT, NO ACTION
+    - `FOREIGN KEY(aluno_id) REFERENCES aluno(id)`
+
+```SQL
+CREATE TABLE aluno_disciplina (
+  aluno_id INTEGER,
+  disciplina_id INTEGER,
+  PRIMARY KEY(aluno_id, disciplina_id)
+  FOREIGN KEY(aluno_id) REFERENCES aluno(id)
+  FOREIGN KEY(disciplina_id) REFERENCES disciplina(id)
+  --- nesse contexto, disciplina é uma tabela; aluno também é uma tabela; os 'id' são as primary keys dessas tabelas
+)
+```
+
+- Cardinalidades -> entender onde vai estar a FK
+  - relacionamento 1:1, a FK vai estar em uma das tabelas que estão conectadas
+  - relacionamento 1:N, a FK vai estar na tabela onde a cardinalidade é **N**
+  - relacionamento N:N, criação de uma nova tabela, onde as FK's serão as PK's das duas tabelas
+
+- Integridade e Performance
+  - índices em chaves estrangeiras
+  - uso de ON DELETE CASCADE X RESTRICT
+  - verificação de integridade via CHECK e NOT NULL
+  - Impacto em JOINS e normalização
+
+- Padrões e boas práticas
+  - nomeação consistente de `constraints`
+    - `fk_tabela_referencia`
+    - constraint com nome único
+  - documentação de relacionamentos no DDL (comment on constraint)
+  - evitar relacionamentos circulares
+  - monitorar cardinalidades reais e ajustar a modelagem
+
+- Outras features e otimizações
+  - índices: `CREATE INDEX idx_nome ON tabela(coluna)`
+  - `EXCLUDE` constraints para restrições geométricas ou customizadas
+  - schemas e tablespaces
+  - herança de tabelas (postgres-specific)
+  - partitioning(range, list, hash)
+
+## Criando as tabelas, constraints e integridade
+
+Passos
+
+- primeiro criar as tabelas que não possuem FK
+- criar as tabelas que possuem FK
+
+```sql
+-- Criação de tabelas sem chave estrangeira
+
+-- 1. Tabela de Clientes
+CREATE TABLE cliente (
+  cpf VARCHAR(20) PRIMARY KEY,
+  nome VARCHAR(100) NOT NULL,
+  dt_nasc DATE,
+  email VARCHAR(50) UNIQUE,  -- email é único na coluna
+  criado_em TIMESTAMP NOT NULL DEFAULT now(), -- quando o cliente foi cadastrado
+  atualizado_em TIMESTAMP NOT NULL DEFAULT now() -- quando o cliente foi atualizado
+);
+
+-- 2. Produto
+
+CREATE TABLE produto (
+  codigo SERIAL PRIMARY KEY,
+  nome VARCHAR(50) NOT NULL UNIQUE, -- nomes não se repetem
+  descricao TEXT NOT NULL,
+  preco_unitario DECIMAL(10,2) DEFAULT 0.00
+);
+
+-- 3. Categorias
+
+CREATE TABLE categoria (
+  codigo SERIAL PRIMARY KEY,
+  nome VARCHAR(50) NOT NULL UNIQUE -- nomes não se repetem
+);
+
+-- Tabelas com chaves estrangeiras
+
+-- 4. Endereço
+
+CREATE TABLE endereco (
+  codigo SERIAL PRIMARY KEY,
+  rua VARCHAR(50) NOT NULL,
+  cidade VARCHAR(100) NOT NULL,
+  estado VARCHAR(2) NOT NULL DEFAULT 'SP',
+  cpf VARCHAR(20) NOT NULL, -- sem a constraint o cpf é mais uma coluna sem o relacionamento
+  CONSTRAINT fk_endereco_cliente -- a constraint faz o relacionamento da FK
+    FOREIGN KEY(cpf) REFERENCES cliente(cpf)
+);
+
+-- 5. Pedido
+
+CREATE TABLE pedido (
+  numero SERIAL PRIMARY KEY,
+  data DATE NOT NULL DEFAULT CURRENT_DATE,
+  status VARCHAR(20) NOT NULL DEFAULT 'PENDENTE',
+  cpf VARCHAR(20) NOT NULL, -- sem a constraint o cpf é mais uma coluna sem o relacionamento
+  CONSTRAINT fk_pedido_cliente -- a constraint faz o relacionamento da FK
+    FOREIGN KEY(cpf) REFERENCES cliente(cpf)
+);
+
+-- 6. Item Pedido
+
+CREATE TABLE item_pedido (
+  codigo SERIAL PRIMARY KEY,
+  quantidade INT NOT NULL DEFAULT 1,
+  total DECIMAL(10,2) NOT NULL DEFAULT 0.00, -- inicia em 0.00
+  codigo_produto INT NOT NULL, -- tem que ser INT pois a PK é SERIAL
+  numero_pedido INT NOT NULL, -- tem que ser INT pois a PK é SERIAL
+
+  CONSTRAINT fk_itempedido_produto
+    FOREIGN KEY(codigo_produto) REFERENCES produto(codigo),
+
+  CONSTRAINT fk_itempedido_pedido
+    FOREIGN KEY(numero_pedido) REFERENCES pedido(numero)
+);
+
+-- 7. Produto Categoria (N:N)
+
+CREATE TABLE produto_categoria (
+  codigo SERIAL PRIMARY KEY,
+  codigo_produto INT NOT NULL,
+  codigo_categoria INT NOT NULL,
+
+  CONSTRAINT fk_produtocategoria_produto
+    FOREIGN KEY(codigo_produto) REFERENCES produto(codigo),
+
+  CONSTRAINT fk_produtocategoria_categoria
+    FOREIGN KEY(codigo_categoria) REFERENCES categoria(codigo),
+
+  CONSTRAINT uq_produto_categoria UNIQUE (codigo_produto,codigo_categoria)
+  -- aqui garanto que o par 'produto' e 'categoria' não sejam repetidos
+);
+```
+
+## Insert, Select, Update e Delete
+
+- observar as regras existentes no banco
+  - valores obrigatórios, valores não obrigatórios (regra de negócio)
+  - valores únicos
+
+```sql
+-- INSERT
+INSERT INTO cliente (cpf, nome, dt_nasc, email)
+VALUES
+('10808893882', 'Breno Bernardo Kauê Rodrigues', '1955-01-09', 'brenobernardorodrigues@yahoo.de'),
+('15561932896', 'Benício Luiz Fogaça', '1982-02-06', 'benicio.luiz.fogaca@pig.com.br'),
+('81970171316', 'Bento Giovanni Aparício', '1969-01-14', 'bento-aparicio93@autvale.com');
+
+SELECT * FROM cliente
+WHERE cpf = '15561932896'
+
+
+INSERT INTO endereco (rua, cep, cidade, estado, cpf)
+VALUES
+  ('Travessa Francisca Marques, 945', '24421040', 'São Gonçalo', 'RJ','15561932896'),
+  ('Rua Presidente Nilo Peçanha, 574', '78125021', 'Várzea Grande', 'MT','81970171316');
+
+INSERT INTO endereco (rua, cep, cidade, estado, cpf)
+VALUES
+  ('Rua Jotaka, 1522', '87015000', 'Maringá', 'PR','15561932896');
+
+ALTER TABLE endereco
+ADD cep VARCHAR(9);
+
+SELECT * FROM endereco
+
+INSERT INTO pedido (data, status, cpf)
+VALUES
+  (DEFAULT, DEFAULT,'81970171316'), -- usa o default do banco conforme configurado
+  ('2026-03-03', 'PENDENTE','81970171316');
+
+SELECT * FROM pedido
+
+INSERT INTO produto (nome, descricao, preco_unitario)
+VALUES
+  ('Camisa Polo', 'Lacoste', 79.90),
+  ('Calça Jeans', 'Polo Play', 129.90);
+
+SELECT * FROM produto
+
+-- tabela com 2 chaves estrangeiras
+
+INSERT INTO item_pedido (quantidade, total, codigo_produto, numero_pedido)
+VALUES
+  (2, 159.80, 1, 3),
+  (1, 129.90, 2, 4);
+
+SELECT * FROM item_pedido
+
+-- UPDATE
+UPDATE cliente
+SET email = 'brenobernardorodrigues@yahoo.com.br'
+WHERE cpf = '10808893882';
+
+
+-- DELETE
+DELETE FROM cliente
+WHERE cpf = '10808893882';
+
+
+```
